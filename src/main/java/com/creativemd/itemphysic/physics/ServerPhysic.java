@@ -40,6 +40,9 @@ public class ServerPhysic {
 	
 	public static ArrayList swimItem = new ArrayList(); //Can be Material, Block, Item, Stack, String(Contains)
 	public static ArrayList burnItem = new ArrayList(); //Can be Material, Block, Item, Stack, String(Contains)
+	private static int count_rucC_sS=0;private static boolean ruc_sS = false;private static int rucC_sS=0;
+	private static int currentTick = (int)(System.currentTimeMillis() / 50);
+	private static int lastTick = currentTick;
 	
 	public static void loadItemList()
 	{
@@ -169,6 +172,14 @@ public class ServerPhysic {
 	public static void update(EntityItem item)
 	{
 		ItemStack stack = item.getDataWatcher().getWatchableObjectItemStack(10);
+        try{ruc_sS = ItemDummyContainer.reducecalls;}catch (Throwable e) {ruc_sS = false;};
+        try{rucC_sS = ItemDummyContainer.reducecallsc;}catch (Throwable e) {rucC_sS = 5;};
+        if (!ruc_sS || (ruc_sS && count_rucC_sS == rucC_sS)) {
+        count_rucC_sS = 0;
+        if (stack == null || stack.stackSize == 0) {
+            item.setDead();
+            return;
+        }
         if (stack != null && stack.getItem() != null)
         {
             if (stack.getItem().onEntityItemUpdate(item))
@@ -184,11 +195,19 @@ public class ServerPhysic {
         else
         {
             item.onEntityUpdate();
+            // CraftBukkit start - Use wall time for pickup and despawn timers
+            int elapsedTicks = currentTick - lastTick;
+            item.delayBeforeCanPickup -= elapsedTicks;
+            if (item.delayBeforeCanPickup < 0) item.delayBeforeCanPickup = 0; // Cauldron
+            item.age += elapsedTicks;
+            lastTick = currentTick;
+            // CraftBukkit end
             
-            if (item.delayBeforeCanPickup > 0)
+            /*if (item.delayBeforeCanPickup > 0)
             {
                 --item.delayBeforeCanPickup;
-            }
+            }*/
+            boolean forceUpdate = item.ticksExisted > 0 && item.ticksExisted % 25 == 0; // Cauldron - optimize item tick updates
             item.prevPosX = item.posX;
             item.prevPosY = item.posY;
             item.prevPosZ = item.posZ;
@@ -233,20 +252,25 @@ public class ServerPhysic {
             	item.motionY += amount;*/
             }
             
-            item.noClip = func_145771_j(item, item.posX, (item.boundingBox.minY + item.boundingBox.maxY) / 2.0D, item.posZ);
+            // Cauldron start - if forced
+            if (forceUpdate || item.noClip) {
+                item.noClip = func_145771_j(item, item.posX, (item.boundingBox.minY + item.boundingBox.maxY) / 2.0D, item.posZ);
+            }
+            // Cauldron end
+            //item.noClip = func_145771_j(item, item.posX, (item.boundingBox.minY + item.boundingBox.maxY) / 2.0D, item.posZ);
             item.moveEntity(item.motionX, item.motionY, item.motionZ);
             boolean flag = (int)item.prevPosX != (int)item.posX || (int)item.prevPosY != (int)item.posY || (int)item.prevPosZ != (int)item.posZ;
             
-            if (flag || item.ticksExisted % 25 == 0)
+            if ((flag || item.ticksExisted % 10 == 0) || forceUpdate) // Cauldron - if forced//FFoKC
             {
                 if (item.worldObj.getBlock(MathHelper.floor_double(item.posX), MathHelper.floor_double(item.posY), MathHelper.floor_double(item.posZ)).getMaterial() == Material.lava && canItemBurn(stack))
                 {
                 	item.playSound("random.fizz", 0.4F, 2.0F + random.nextFloat() * 0.4F);
                     for(int zahl = 0; zahl < 100; zahl++)
-                    	item.worldObj.spawnParticle("smoke", item.posX, item.posY, item.posZ, (random.nextFloat()*0.1)-0.05, 0.2*random.nextDouble(), (random.nextFloat()*0.1)-0.05);
+                    	item.worldObj.spawnParticle("smoke", item.posX, item.posY, item.posZ, (random.nextFloat()*0.1)-0.05, 0.2d*random.nextFloat(), (random.nextFloat()*0.1)-0.05);
                 }
 
-                if (!item.worldObj.isRemote)
+                if (forceUpdate && !item.worldObj.isRemote) // Cauldron - if forced
                 {
                     searchForOtherItemsNearby(item);
                 }
@@ -275,7 +299,7 @@ public class ServerPhysic {
             if(item.age < 1 && item.lifespan == 6000)
             	item.lifespan = ItemDummyContainer.despawnItem;
             
-            ++item.age;
+            //++item.age; // CraftBukkit - Moved up (base age on wall time)
             
             if (!item.worldObj.isRemote && item.age >= item.lifespan)
             {
@@ -301,7 +325,7 @@ public class ServerPhysic {
             {
                 item.setDead();
             }
-        }
+        }} else {if(ruc_sS)count_rucC_sS++;}
 	}
 	
 	public static Fluid getFluid(EntityItem item)

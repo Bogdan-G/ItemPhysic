@@ -35,6 +35,8 @@ public class ItemPhysicBranch extends ConfigBranch{
 		segments.add(new IntegerSegment("despawn", "despawn time", 6000));
 		segments.add(new BooleanSegment("pickup", "custom pickup", false));
 		segments.add(new BooleanSegment("throw", "custom throw", true));
+		segments.add(new BooleanSegment("reducecalls", "enable", false));
+		segments.add(new IntegerSegment("reducecallsc", "count", 5));
 	}
 
 	@Override
@@ -47,6 +49,8 @@ public class ItemPhysicBranch extends ConfigBranch{
 		ItemDummyContainer.despawnItem = (Integer) collection.getSegmentValue("despawn");
 		ItemDummyContainer.customPickup = (Boolean) collection.getSegmentValue("pickup");
 		ItemDummyContainer.customThrow = (Boolean) collection.getSegmentValue("throw");
+		ItemDummyContainer.reducecalls = (Boolean) collection.getSegmentValue("reducecalls");
+		ItemDummyContainer.reducecallsc = (Integer) collection.getSegmentValue("reducecallsc");
 	}
 
 }
