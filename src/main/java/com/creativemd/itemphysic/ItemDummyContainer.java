@@ -191,6 +191,7 @@ public class ItemDummyContainer extends DummyModContainer {
 			reducecallsc = config.get("Item", "reducecallsc", 5).getInt(5);
 		}
 		rotateSpeed = config.getFloat("rotateSpeed", "Item", 1.0F, 0, 100, "");
+		mergeradiusitem = config.getFloat("merge-radius-item", "Item", 8.0f, 0, 999, "");
 		config.save();
 		ServerPhysic.loadItemList();
 	}
@@ -212,5 +213,6 @@ public class ItemDummyContainer extends DummyModContainer {
 	public static boolean customThrow;
 	public static boolean reducecalls;
 	public static int reducecallsc;
+	public static float mergeradiusitem;
 	
 }

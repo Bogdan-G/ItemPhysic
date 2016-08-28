@@ -36,13 +36,13 @@ import net.minecraftforge.oredict.OreDictionary;
 
 public class ServerPhysic {
 	
-	public static Random random = new Random();
+	public static Random random = new org.bogdang.modifications.random.XSTR();
 	
 	public static ArrayList swimItem = new ArrayList(); //Can be Material, Block, Item, Stack, String(Contains)
 	public static ArrayList burnItem = new ArrayList(); //Can be Material, Block, Item, Stack, String(Contains)
-	private static int count_rucC_sS=0;private static boolean ruc_sS = false;private static int rucC_sS=0;
-	private static int currentTick = (int)(System.currentTimeMillis() / 50);
-	private static int lastTick = currentTick;
+	private static int count_rucC_sS=0;private static boolean ruc_sS = false;private static int rucC_sS=-ItemDummyContainer.reducecallsc;
+	/*private static int currentTick = (int)(System.currentTimeMillis() / 50);*/private static boolean first_item = true;
+	private static EntityItem item_cache = null;
 	
 	public static void loadItemList()
 	{
@@ -172,9 +172,10 @@ public class ServerPhysic {
 	public static void update(EntityItem item)
 	{
 		ItemStack stack = item.getDataWatcher().getWatchableObjectItemStack(10);
-        try{ruc_sS = ItemDummyContainer.reducecalls;}catch (Throwable e) {ruc_sS = false;};
-        try{rucC_sS = ItemDummyContainer.reducecallsc;}catch (Throwable e) {rucC_sS = 5;};
-        if (!ruc_sS || (ruc_sS && count_rucC_sS == rucC_sS)) {
+        ruc_sS = ItemDummyContainer.reducecalls;rucC_sS = -ItemDummyContainer.reducecallsc;
+        if (!ruc_sS || (/*ruc_sS && */((count_rucC_sS == rucC_sS && item_cache == item) || (item_cache != item)))) {
+        if (item_cache == null) {item_cache = item;}
+        if (item_cache != item) {item_cache = item;} else {if (count_rucC_sS != rucC_sS) return;}
         count_rucC_sS = 0;
         if (stack == null || stack.stackSize == 0) {
             item.setDead();
@@ -194,20 +195,25 @@ public class ServerPhysic {
         }
         else
         {
-            item.onEntityUpdate();
-            // CraftBukkit start - Use wall time for pickup and despawn timers
-            int elapsedTicks = currentTick - lastTick;
+            if (item.ticksExisted > 0 && item.ticksExisted % 2 == 0) item.onEntityUpdate();
+            // CraftBukkit start - Use wall time for pickup and despawn timers//method static, not good work CB logic
+            /*int elapsedTicks = 0;
+            if (item_cache == null) item_cache = item;
+            if (first_item || item_cache != item) {
+            int lastTick = (int)(System.currentTimeMillis() / 50);
+            elapsedTicks = currentTick - lastTick;first_item = false;} else {first_item = true;}
+            if (item_cache != item) item_cache = item;
             item.delayBeforeCanPickup -= elapsedTicks;
             if (item.delayBeforeCanPickup < 0) item.delayBeforeCanPickup = 0; // Cauldron
             item.age += elapsedTicks;
-            lastTick = currentTick;
+            lastTick = currentTick;*/
             // CraftBukkit end
             
-            /*if (item.delayBeforeCanPickup > 0)
+            if (item.delayBeforeCanPickup > 0)
             {
                 --item.delayBeforeCanPickup;
-            }*/
-            boolean forceUpdate = item.ticksExisted > 0 && item.ticksExisted % 25 == 0; // Cauldron - optimize item tick updates
+            }
+            boolean forceUpdate = item.ticksExisted > 0 && item.ticksExisted % 100 == 0; // Cauldron - optimize item tick updates
             item.prevPosX = item.posX;
             item.prevPosY = item.posY;
             item.prevPosZ = item.posZ;
@@ -253,15 +259,15 @@ public class ServerPhysic {
             }
             
             // Cauldron start - if forced
-            if (forceUpdate || item.noClip) {
+            if (forceUpdate) {
                 item.noClip = func_145771_j(item, item.posX, (item.boundingBox.minY + item.boundingBox.maxY) / 2.0D, item.posZ);
             }
             // Cauldron end
             //item.noClip = func_145771_j(item, item.posX, (item.boundingBox.minY + item.boundingBox.maxY) / 2.0D, item.posZ);
-            item.moveEntity(item.motionX, item.motionY, item.motionZ);
+            if (item.ticksExisted > 0 && item.ticksExisted % 2 == 0) item.moveEntity(item.motionX, item.motionY, item.motionZ);
             boolean flag = (int)item.prevPosX != (int)item.posX || (int)item.prevPosY != (int)item.posY || (int)item.prevPosZ != (int)item.posZ;
             
-            if ((flag || item.ticksExisted % 10 == 0) || forceUpdate) // Cauldron - if forced//FFoKC
+            if (flag || forceUpdate || item.ticksExisted % 250 == 0) // Cauldron - if forced//FFoKC
             {
                 if (item.worldObj.getBlock(MathHelper.floor_double(item.posX), MathHelper.floor_double(item.posY), MathHelper.floor_double(item.posZ)).getMaterial() == Material.lava && canItemBurn(stack))
                 {
@@ -276,6 +282,7 @@ public class ServerPhysic {
                 }
             }
             
+            if (item.ticksExisted > 0 && item.ticksExisted % 2 == 0) {
             if (item.onGround)
             {
                 f = item.worldObj.getBlock(MathHelper.floor_double(item.posX), MathHelper.floor_double(item.boundingBox.minY) - 1, MathHelper.floor_double(item.posZ)).slipperiness * 0.98F;
@@ -294,12 +301,12 @@ public class ServerPhysic {
 	            {
 	            	item.motionY *= -0.5D;
 	            }
-            }
+            }}
             
             if(item.age < 1 && item.lifespan == 6000)
             	item.lifespan = ItemDummyContainer.despawnItem;
             
-            //++item.age; // CraftBukkit - Moved up (base age on wall time)
+            ++item.age; // CraftBukkit - Moved up (base age on wall time)//method static, not good work CB logic
             
             if (!item.worldObj.isRemote && item.age >= item.lifespan)
             {
@@ -325,7 +332,7 @@ public class ServerPhysic {
             {
                 item.setDead();
             }
-        }} else {if(ruc_sS)count_rucC_sS++;}
+        }} else {if(ruc_sS)count_rucC_sS--;}
 	}
 	
 	public static Fluid getFluid(EntityItem item)
@@ -391,7 +398,7 @@ public class ServerPhysic {
 	
 	private static void searchForOtherItemsNearby(EntityItem item)
     {
-        Iterator iterator = item.worldObj.getEntitiesWithinAABB(EntityItem.class, item.boundingBox.expand(0.5D, 0.0D, 0.5D)).iterator();
+        Iterator iterator = item.worldObj.getEntitiesWithinAABB(EntityItem.class, item.boundingBox.expand((double)ItemDummyContainer.mergeradiusitem, 0.0D, (double)ItemDummyContainer.mergeradiusitem)).iterator();//old: 0.5D, 0.0D, 0.5D
 
         while (iterator.hasNext())
         {

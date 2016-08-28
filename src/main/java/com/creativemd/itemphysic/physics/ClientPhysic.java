@@ -39,7 +39,7 @@ public class ClientPhysic {
 	@SideOnly(Side.CLIENT)
 	public static RenderBlocks BlockRenderer = new RenderBlocks();
 	public static RenderItem ItemRenderer = RenderItem.getInstance();
-	public static Random random = new Random();
+	public static Random random = new org.bogdang.modifications.random.XSTR();
 	public static Minecraft mc = Minecraft.getMinecraft();
 	
 	public static long tick;

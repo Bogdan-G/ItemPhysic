@@ -6,6 +6,7 @@ import com.creativemd.ingameconfigmanager.api.common.branch.ConfigBranch;
 import com.creativemd.ingameconfigmanager.api.common.branch.ConfigSegmentCollection;
 import com.creativemd.ingameconfigmanager.api.common.segment.BooleanSegment;
 import com.creativemd.ingameconfigmanager.api.common.segment.IntegerSegment;
+import com.creativemd.ingameconfigmanager.api.common.segment.FloatSegment;
 import com.creativemd.itemphysic.ItemDummyContainer;
 
 import cpw.mods.fml.relauncher.Side;
@@ -37,6 +38,7 @@ public class ItemPhysicBranch extends ConfigBranch{
 		segments.add(new BooleanSegment("throw", "custom throw", true));
 		segments.add(new BooleanSegment("reducecalls", "enable", false));
 		segments.add(new IntegerSegment("reducecallsc", "count", 5));
+		segments.add(new IntegerSegment("merge-radius-item", "count", 8));
 	}
 
 	@Override
@@ -51,6 +53,7 @@ public class ItemPhysicBranch extends ConfigBranch{
 		ItemDummyContainer.customThrow = (Boolean) collection.getSegmentValue("throw");
 		ItemDummyContainer.reducecalls = (Boolean) collection.getSegmentValue("reducecalls");
 		ItemDummyContainer.reducecallsc = (Integer) collection.getSegmentValue("reducecallsc");
+		ItemDummyContainer.mergeradiusitem = (Float) collection.getSegmentValue("merge-radius-item");
 	}
 
 }
