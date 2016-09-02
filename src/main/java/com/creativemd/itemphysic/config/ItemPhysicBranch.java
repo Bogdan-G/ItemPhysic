@@ -38,7 +38,7 @@ public class ItemPhysicBranch extends ConfigBranch{
 		segments.add(new BooleanSegment("throw", "custom throw", true));
 		segments.add(new BooleanSegment("reducecalls", "enable", false));
 		segments.add(new IntegerSegment("reducecallsc", "count", 5));
-		segments.add(new IntegerSegment("merge-radius-item", "count", 8));
+		segments.add(new FloatSegment("merge-radius-item", "count", 8.0f));
 	}
 
 	@Override
@@ -53,7 +53,7 @@ public class ItemPhysicBranch extends ConfigBranch{
 		ItemDummyContainer.customThrow = (Boolean) collection.getSegmentValue("throw");
 		ItemDummyContainer.reducecalls = (Boolean) collection.getSegmentValue("reducecalls");
 		ItemDummyContainer.reducecallsc = (Integer) collection.getSegmentValue("reducecallsc");
-		ItemDummyContainer.mergeradiusitem = (Float) collection.getSegmentValue("merge-radius-item");
+		ItemDummyContainer.mergeradiusitem = (Float) ((Object)collection.getSegmentValue("merge-radius-item"));
 	}
 
 }
