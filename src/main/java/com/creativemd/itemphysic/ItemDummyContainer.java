@@ -189,6 +189,8 @@ public class ItemDummyContainer extends DummyModContainer {
 			customThrow = config.get("Item", "customThrow", true).getBoolean(true);
 			reducecalls = config.get("Item", "reducecalls", false).getBoolean(false);
 			reducecallsc = config.get("Item", "reducecallsc", 5).getInt(5);
+			reducecallstick2times = config.get("Item", "reducecallstick2times", false).getBoolean(false);
+			loggingpremoveentity = config.get("Item", "loggingpremoveentity", false).getBoolean(false);
 		}
 		rotateSpeed = config.getFloat("rotateSpeed", "Item", 1.0F, 0, 100, "");
 		mergeradiusitem = config.getFloat("merge-radius-item", "Item", 8.0f, 0, 999, "");
@@ -214,5 +216,7 @@ public class ItemDummyContainer extends DummyModContainer {
 	public static boolean reducecalls;
 	public static int reducecallsc;
 	public static float mergeradiusitem;
+	public static boolean reducecallstick2times;
+	public static boolean loggingpremoveentity;
 	
 }

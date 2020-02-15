@@ -175,7 +175,7 @@ public class ServerPhysic {
         ruc_sS = ItemDummyContainer.reducecalls;rucC_sS = -ItemDummyContainer.reducecallsc;
         if (!ruc_sS || (/*ruc_sS && */((count_rucC_sS == rucC_sS && item_cache == item) || (item_cache != item)))) {
         if (item_cache == null) {item_cache = item;}
-        if (item_cache != item) {item_cache = item;} else {if (count_rucC_sS != rucC_sS) return;}
+        if (item_cache != item) {item_cache = item;} else {if (ruc_sS && count_rucC_sS != rucC_sS) return;}
         count_rucC_sS = 0;
         if (stack == null || stack.stackSize == 0) {
             item.setDead();
@@ -195,7 +195,7 @@ public class ServerPhysic {
         }
         else
         {
-            if (item.ticksExisted > 0 && item.ticksExisted % 2 == 0) item.onEntityUpdate();
+            if (!ItemDummyContainer.reducecallstick2times || item.ticksExisted > 0 && item.ticksExisted % 2 == 0) item.onEntityUpdate();
             // CraftBukkit start - Use wall time for pickup and despawn timers//method static, not good work CB logic
             /*int elapsedTicks = 0;
             if (item_cache == null) item_cache = item;
@@ -213,7 +213,7 @@ public class ServerPhysic {
             {
                 --item.delayBeforeCanPickup;
             }
-            boolean forceUpdate = item.ticksExisted > 0 && item.ticksExisted % 100 == 0; // Cauldron - optimize item tick updates
+            boolean forceUpdate = item.ticksExisted > 0 && (ItemDummyContainer.reducecallstick2times ? item.ticksExisted % 100 == 0 : item.ticksExisted % 25 == 0); // Cauldron - optimize item tick updates
             item.prevPosX = item.posX;
             item.prevPosY = item.posY;
             item.prevPosZ = item.posZ;
@@ -259,15 +259,18 @@ public class ServerPhysic {
             }
             
             // Cauldron start - if forced
-            if (forceUpdate) {
+            if (!ItemDummyContainer.reducecallstick2times || forceUpdate) {
                 item.noClip = func_145771_j(item, item.posX, (item.boundingBox.minY + item.boundingBox.maxY) / 2.0D, item.posZ);
             }
             // Cauldron end
             //item.noClip = func_145771_j(item, item.posX, (item.boundingBox.minY + item.boundingBox.maxY) / 2.0D, item.posZ);
-            if (item.ticksExisted > 0 && item.ticksExisted % 2 == 0) item.moveEntity(item.motionX, item.motionY, item.motionZ);
+            if (!ItemDummyContainer.reducecallstick2times || item.ticksExisted > 0 && item.ticksExisted % 2 == 0) {
+            if (ItemDummyContainer.loggingpremoveentity) cpw.mods.fml.common.FMLLog.warning("ItemPhysics ServerPhysic update item %s %s ticks", item, item.ticksExisted);
+            item.moveEntity(item.motionX, item.motionY, item.motionZ);
+            }
             boolean flag = (int)item.prevPosX != (int)item.posX || (int)item.prevPosY != (int)item.posY || (int)item.prevPosZ != (int)item.posZ;
             
-            if (flag || forceUpdate || item.ticksExisted % 250 == 0) // Cauldron - if forced//FFoKC
+            if (flag || forceUpdate || (!ItemDummyContainer.reducecallstick2times || item.ticksExisted % 250 == 0)) // Cauldron - if forced//FFoKC
             {
                 if (item.worldObj.getBlock(MathHelper.floor_double(item.posX), MathHelper.floor_double(item.posY), MathHelper.floor_double(item.posZ)).getMaterial() == Material.lava && canItemBurn(stack))
                 {
@@ -276,13 +279,13 @@ public class ServerPhysic {
                     	item.worldObj.spawnParticle("smoke", item.posX, item.posY, item.posZ, (random.nextFloat()*0.1)-0.05, 0.2d*random.nextFloat(), (random.nextFloat()*0.1)-0.05);
                 }
 
-                if (forceUpdate && !item.worldObj.isRemote) // Cauldron - if forced
+                if ((!ItemDummyContainer.reducecallstick2times || forceUpdate) && !item.worldObj.isRemote) // Cauldron - if forced
                 {
                     searchForOtherItemsNearby(item);
                 }
             }
             
-            if (item.ticksExisted > 0 && item.ticksExisted % 2 == 0) {
+            if (!ItemDummyContainer.reducecallstick2times || item.ticksExisted > 0 && item.ticksExisted % 2 == 0) {
             if (item.onGround)
             {
                 f = item.worldObj.getBlock(MathHelper.floor_double(item.posX), MathHelper.floor_double(item.boundingBox.minY) - 1, MathHelper.floor_double(item.posZ)).slipperiness * 0.98F;
